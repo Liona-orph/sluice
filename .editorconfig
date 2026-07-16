@@ -1,0 +1,27 @@
+# https://editorconfig.org
+# gofmt is the authority for Go; this file exists so that everything else in the
+# repository is consistent without anyone having to think about it.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.go]
+indent_style = tab
+indent_size = 4
+
+[Makefile]
+indent_style = tab
+
+[*.md]
+# Two trailing spaces are a line break in Markdown, so trimming them changes the
+# rendered document.
+trim_trailing_whitespace = false
+
+[*.{yml,yaml,json,html,css,js}]
+indent_size = 2
