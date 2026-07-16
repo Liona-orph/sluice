@@ -1,0 +1,33 @@
+# Build output
+/sluice
+/dist/
+/bin/
+*.exe
+*.test
+*.out
+
+# Coverage
+coverage.out
+coverage.html
+
+# Runtime artefacts. The audit log holds redacted prompts and real spend figures,
+# so it must never be committed by accident.
+*.jsonl
+audit.log
+
+# Local configuration, which is where key secrets live.
+sluice.yaml
+sluice.yml
+sluice.local.*
+!sluice.example.yaml
+
+# Fuzz corpora found by a local run. Interesting cases belong in testdata,
+# committed deliberately with a comment saying what they exercise.
+**/testdata/fuzz/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
