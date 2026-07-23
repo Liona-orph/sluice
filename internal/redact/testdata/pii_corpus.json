@@ -1,0 +1,315 @@
+{
+  "_comment": [
+    "Labelled fixtures for measuring detector precision and recall.",
+    "",
+    "Ground truth is what a careful human would mark, not what the detectors in",
+    "this package happen to find. Several documents are labelled with entities no",
+    "detector here can reach -- a surname standing alone, a given name outside the",
+    "gazetteer -- because a corpus that only contains what the code already handles",
+    "measures nothing. The recall floors in eval_test.go are set below 1.0 for",
+    "exactly that reason, and the gap is the honest statement of what this package",
+    "cannot do.",
+    "",
+    "Documents with an empty entity list are negatives: text that looks like it",
+    "contains an entity and does not. They are the only thing that makes the",
+    "precision figure meaningful.",
+    "",
+    "Every value here is fabricated. Card numbers are the publicly published test",
+    "numbers that satisfy Luhn; IBANs satisfy mod-97; the DNI check letters are",
+    "correct. Nothing in this file identifies a person."
+  ],
+  "documents": [
+    {
+      "id": "email-simple",
+      "text": "Please forward the report to alice.hansen@example.com before Friday.",
+      "entities": [{"type": "email", "value": "alice.hansen@example.com"}]
+    },
+    {
+      "id": "email-several",
+      "text": "cc: j.smith@corp.example.co.uk and support+billing@vendor.io on the thread.",
+      "entities": [
+        {"type": "email", "value": "j.smith@corp.example.co.uk"},
+        {"type": "email", "value": "support+billing@vendor.io"}
+      ]
+    },
+    {
+      "id": "email-negative-at-sign",
+      "text": "Meet me @ the office at 9am, or @everyone in the channel.",
+      "entities": []
+    },
+    {
+      "id": "email-negative-price",
+      "text": "We bought 40 units @ 12.50 each from the supplier.",
+      "entities": []
+    },
+    {
+      "id": "phone-uk",
+      "text": "The London office is on +44 20 7946 0958 during business hours.",
+      "entities": [{"type": "phone", "value": "+44 20 7946 0958"}]
+    },
+    {
+      "id": "phone-us-parens",
+      "text": "Call (415) 555-0132 and ask for the duty manager.",
+      "entities": [{"type": "phone", "value": "(415) 555-0132"}]
+    },
+    {
+      "id": "phone-us-dashes",
+      "text": "My mobile is 415-555-0199 if anything goes wrong.",
+      "entities": [{"type": "phone", "value": "415-555-0199"}]
+    },
+    {
+      "id": "phone-de",
+      "text": "Berlin support: +49 30 12345678, weekdays only.",
+      "entities": [{"type": "phone", "value": "+49 30 12345678"}]
+    },
+    {
+      "id": "phone-uk-trunk",
+      "text": "Reception can be reached on 020 7946 0321 all day.",
+      "entities": [{"type": "phone", "value": "020 7946 0321"}]
+    },
+    {
+      "id": "phone-negative-order",
+      "text": "Order 1234567 shipped on the 3rd and arrived on the 11th.",
+      "entities": []
+    },
+    {
+      "id": "phone-negative-date",
+      "text": "The contract runs from 2024-11-20 to 2026-11-19 inclusive.",
+      "entities": []
+    },
+    {
+      "id": "card-visa",
+      "text": "The payment failed for card 4111111111111111 with a soft decline.",
+      "entities": [{"type": "credit_card", "value": "4111111111111111"}]
+    },
+    {
+      "id": "card-spaced",
+      "text": "Try 4012 8888 8888 1881 instead and let me know.",
+      "entities": [{"type": "credit_card", "value": "4012 8888 8888 1881"}]
+    },
+    {
+      "id": "card-amex",
+      "text": "Amex 378282246310005 was declined by the issuer.",
+      "entities": [{"type": "credit_card", "value": "378282246310005"}]
+    },
+    {
+      "id": "card-discover-hyphens",
+      "text": "Use 6011-1111-1111-1117 for the regression suite.",
+      "entities": [{"type": "credit_card", "value": "6011-1111-1111-1117"}]
+    },
+    {
+      "id": "card-negative-order-number",
+      "text": "Reference 7391028465738291 appears twice in the ledger.",
+      "entities": []
+    },
+    {
+      "id": "card-negative-timestamps",
+      "text": "The run produced 1730451200000123 events in the window.",
+      "entities": []
+    },
+    {
+      "id": "iban-gb",
+      "text": "Settle to GB82WEST12345698765432 by the end of the month.",
+      "entities": [{"type": "iban", "value": "GB82WEST12345698765432"}]
+    },
+    {
+      "id": "iban-de",
+      "text": "The German account DE89370400440532013000 is still open.",
+      "entities": [{"type": "iban", "value": "DE89370400440532013000"}]
+    },
+    {
+      "id": "iban-es",
+      "text": "Payroll goes to ES9121000418450200051332 from January.",
+      "entities": [{"type": "iban", "value": "ES9121000418450200051332"}]
+    },
+    {
+      "id": "iban-negative-reference",
+      "text": "Ticket AB12CDEF3456789012 was closed without a comment.",
+      "entities": []
+    },
+    {
+      "id": "ip-v4",
+      "text": "The request came from 192.168.14.203 inside the VPN.",
+      "entities": [{"type": "ip_address", "value": "192.168.14.203"}]
+    },
+    {
+      "id": "ip-v4-public",
+      "text": "Block 203.0.113.42 at the edge and retry.",
+      "entities": [{"type": "ip_address", "value": "203.0.113.42"}]
+    },
+    {
+      "id": "ip-v6",
+      "text": "The upstream reported 2001:db8::8a2e:370:7334 in the header.",
+      "entities": [{"type": "ip_address", "value": "2001:db8::8a2e:370:7334"}]
+    },
+    {
+      "id": "ip-negative-out-of-range",
+      "text": "The build wrote 999.888.777.666 into the log, which is not an address.",
+      "entities": []
+    },
+    {
+      "id": "ssn-hyphenated",
+      "text": "The applicant gave 123-45-6789 on the intake form.",
+      "entities": [{"type": "us_ssn", "value": "123-45-6789"}]
+    },
+    {
+      "id": "ssn-spaced",
+      "text": "Verify 078 05 1120 against the record before proceeding.",
+      "entities": [{"type": "us_ssn", "value": "078 05 1120"}]
+    },
+    {
+      "id": "ssn-negative-invalid-area",
+      "text": "The placeholder 000-12-3456 is used in the fixture data.",
+      "entities": []
+    },
+    {
+      "id": "ssn-negative-reserved",
+      "text": "Do not use 666-45-6789 in examples; it is never issued.",
+      "entities": []
+    },
+    {
+      "id": "nino-plain",
+      "text": "Payroll has AB123456C on file for that employee.",
+      "entities": [{"type": "uk_nino", "value": "AB123456C"}]
+    },
+    {
+      "id": "nino-spaced",
+      "text": "HMRC returned JG 12 34 56 A for the query.",
+      "entities": [{"type": "uk_nino", "value": "JG 12 34 56 A"}]
+    },
+    {
+      "id": "nino-negative-reserved-prefix",
+      "text": "The test fixture BG123456A is not a real number.",
+      "entities": []
+    },
+    {
+      "id": "dni-plain",
+      "text": "The Spanish contractor gave 12345678Z at signing.",
+      "entities": [{"type": "es_dni", "value": "12345678Z"}]
+    },
+    {
+      "id": "dni-second",
+      "text": "Invoice was issued against 87654321X last quarter.",
+      "entities": [{"type": "es_dni", "value": "87654321X"}]
+    },
+    {
+      "id": "dni-negative-wrong-letter",
+      "text": "The label 12345678A came off a shipping box.",
+      "entities": []
+    },
+    {
+      "id": "key-openai",
+      "text": "The service is configured with sk-Ab3xK9mQ2pL7vR4tY8wZ1nHj and restarts nightly.",
+      "entities": [{"type": "api_key", "value": "sk-Ab3xK9mQ2pL7vR4tY8wZ1nHj"}]
+    },
+    {
+      "id": "key-aws",
+      "text": "Rotate AKIAIOSFODNN7EXAMPLE before the audit.",
+      "entities": [{"type": "api_key", "value": "AKIAIOSFODNN7EXAMPLE"}]
+    },
+    {
+      "id": "key-github",
+      "text": "The token ghp_16C7e42F292c6912E7710c838347Ae178B4a is in the CI config.",
+      "entities": [{"type": "api_key", "value": "ghp_16C7e42F292c6912E7710c838347Ae178B4a"}]
+    },
+    {
+      "id": "key-generic-entropy",
+      "text": "Set SECRET=Xk7Qp2Rm9Tz4Vb8Nc3Wd6Yf1 in the environment file.",
+      "entities": [{"type": "api_key", "value": "Xk7Qp2Rm9Tz4Vb8Nc3Wd6Yf1"}]
+    },
+    {
+      "id": "key-negative-identifier",
+      "text": "Rename getUserByIdentifierName to something shorter in the next pass.",
+      "entities": []
+    },
+    {
+      "id": "key-negative-sentence",
+      "text": "The internationalisation configuration needs revisiting before release.",
+      "entities": []
+    },
+    {
+      "id": "key-negative-digest",
+      "text": "The artefact digest is 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08 and it matched.",
+      "entities": []
+    },
+    {
+      "id": "name-introduced",
+      "text": "My name is Sarah Chen and I would like a refund.",
+      "entities": [{"type": "person_name", "value": "Sarah Chen"}]
+    },
+    {
+      "id": "name-honorific",
+      "text": "Dear Mr. Thompson, thank you for the update.",
+      "entities": [{"type": "person_name", "value": "Thompson"}]
+    },
+    {
+      "id": "name-signoff",
+      "text": "Please advise on the next steps. Regards, Elena",
+      "entities": [{"type": "person_name", "value": "Elena"}]
+    },
+    {
+      "id": "name-gazetteer",
+      "text": "The account was opened by Michael Okafor in March.",
+      "entities": [{"type": "person_name", "value": "Michael Okafor"}]
+    },
+    {
+      "id": "name-surname-only",
+      "text": "The report was written by Kowalski over the weekend.",
+      "entities": [{"type": "person_name", "value": "Kowalski"}]
+    },
+    {
+      "id": "name-hyphenated-unknown",
+      "text": "Ask Jean-Pierre about the invoice discrepancy.",
+      "entities": [{"type": "person_name", "value": "Jean-Pierre"}]
+    },
+    {
+      "id": "name-negative-verb",
+      "text": "Mark the invoice as paid and file it under the current quarter.",
+      "entities": []
+    },
+    {
+      "id": "name-negative-month",
+      "text": "The renewal falls in August, shortly after the audit.",
+      "entities": []
+    },
+    {
+      "id": "name-full-ambiguous-given",
+      "text": "Ask Grace Hopper to review the compiler notes.",
+      "entities": [{"type": "person_name", "value": "Grace Hopper"}]
+    },
+    {
+      "id": "name-negative-department",
+      "text": "Please contact Support before Friday and open a ticket.",
+      "entities": []
+    },
+    {
+      "id": "name-negative-org",
+      "text": "The Boston office and the Sales team both approved the change.",
+      "entities": []
+    },
+    {
+      "id": "name-negative-place",
+      "text": "The Berlin and Lisbon offices both reported the same fault.",
+      "entities": []
+    },
+    {
+      "id": "mixed-support-ticket",
+      "text": "My name is David Larsen, my account email is d.larsen@example.org and my number is +47 22 12 34 56. The card ending 1881 was charged twice.",
+      "entities": [
+        {"type": "person_name", "value": "David Larsen"},
+        {"type": "email", "value": "d.larsen@example.org"},
+        {"type": "phone", "value": "+47 22 12 34 56"}
+      ]
+    },
+    {
+      "id": "mixed-clean-prose",
+      "text": "The gateway computes cost from token counts, caches identical requests, and fails over when an upstream returns a 503.",
+      "entities": []
+    },
+    {
+      "id": "mixed-code-snippet",
+      "text": "resp, err := client.Complete(ctx, req); if err != nil { return fmt.Errorf(\"complete: %w\", err) }",
+      "entities": []
+    }
+  ]
+}
