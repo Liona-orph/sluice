@@ -1,0 +1,43 @@
+{
+  "_comment": [
+    "Prompt pairs for measuring the semantic cache's false-hit rate.",
+    "",
+    "\"equivalent\": true means the two prompts should get the same answer, so",
+    "serving one from the other's cache entry is correct and desirable.",
+    "\"equivalent\": false means they must not share an answer -- these are the",
+    "dangerous pairs, and the fraction of them that clear the similarity threshold",
+    "is the false-hit rate the package documents.",
+    "",
+    "The non-equivalent pairs are deliberately adversarial: they differ by one word",
+    "and that word reverses, negates or redirects the question. A cache that only",
+    "confuses obviously different prompts is not being tested."
+  ],
+  "pairs": [
+    {"a": "What is the capital of France?", "b": "what is the capital of france", "equivalent": true, "note": "case and punctuation"},
+    {"a": "How do I reset my password?", "b": "How do I reset my password", "equivalent": true, "note": "trailing punctuation"},
+    {"a": "Summarise the attached report.", "b": "Summarise  the   attached report.", "equivalent": true, "note": "whitespace"},
+    {"a": "List the top three risks.", "b": "List the top three risks!", "equivalent": true, "note": "terminator"},
+    {"a": "Explain HTTP caching to a junior engineer.", "b": "explain http caching to a junior engineer", "equivalent": true, "note": "case only"},
+
+    {"a": "What is the capital of France?", "b": "What is the capital of Germany?", "equivalent": false, "note": "one noun changes the answer entirely"},
+    {"a": "How do I delete a user?", "b": "How do I create a user?", "equivalent": false, "note": "opposite operations"},
+    {"a": "Convert 10 USD to EUR.", "b": "Convert 10 EUR to USD.", "equivalent": false, "note": "direction reversed, same words"},
+    {"a": "Enable request logging.", "b": "Disable request logging.", "equivalent": false, "note": "negation by prefix"},
+    {"a": "Is the flight on Monday?", "b": "Is the flight on Tuesday?", "equivalent": false, "note": "one token differs"},
+    {"a": "Summarise the third paragraph.", "b": "Summarise the fourth paragraph.", "equivalent": false, "note": "ordinal differs"},
+    {"a": "Should we buy this company?", "b": "Should we sell this company?", "equivalent": false, "note": "verb reversal"},
+    {"a": "List the risks of this migration.", "b": "List the benefits of this migration.", "equivalent": false, "note": "opposite framing"},
+    {"a": "What did revenue do in Q1?", "b": "What did revenue do in Q4?", "equivalent": false, "note": "period differs"},
+    {"a": "Write a Python function to sort a list.", "b": "Write a Go function to sort a list.", "equivalent": false, "note": "language differs"},
+    {"a": "Translate this to French.", "b": "Translate this to Spanish.", "equivalent": false, "note": "target language differs"},
+    {"a": "Set the timeout to 30 seconds.", "b": "Set the timeout to 300 seconds.", "equivalent": false, "note": "magnitude differs"},
+    {"a": "Does this contract permit assignment?", "b": "Does this contract prohibit assignment?", "equivalent": false, "note": "permit vs prohibit"},
+    {"a": "Who approved the change?", "b": "Who reverted the change?", "equivalent": false, "note": "different event"},
+    {"a": "Show me errors from yesterday.", "b": "Show me errors from today.", "equivalent": false, "note": "relative time differs"},
+    {"a": "How many users signed up?", "b": "How many users cancelled?", "equivalent": false, "note": "different metric"},
+    {"a": "Explain the retry policy.", "b": "Explain the redaction policy.", "equivalent": false, "note": "similar-looking nouns"},
+    {"a": "Is this covered by the warranty?", "b": "Is this excluded from the warranty?", "equivalent": false, "note": "covered vs excluded"},
+    {"a": "Add the user to the admin group.", "b": "Remove the user from the admin group.", "equivalent": false, "note": "add vs remove"},
+    {"a": "What is 15% of 200?", "b": "What is 15% of 2000?", "equivalent": false, "note": "digits differ"}
+  ]
+}
