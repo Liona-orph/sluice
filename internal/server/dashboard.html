@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sluice</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #161b22;
+    --panel-2: #1c232c;
+    --line: #253040;
+    --ink: #e6edf3;
+    --ink-dim: #8b98a8;
+    --ink-faint: #5b6775;
+    --accent: #4cc2ff;
+    --good: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  header {
+    display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+    padding: 20px 28px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #131922 0%, var(--bg) 100%);
+    position: sticky; top: 0; z-index: 5;
+  }
+  .brand { font-size: 19px; font-weight: 650; letter-spacing: -0.01em; }
+  .brand span { color: var(--accent); }
+  .tagline { color: var(--ink-faint); font-size: 13px; }
+  .spacer { flex: 1; }
+  .meta { font-family: var(--mono); font-size: 12px; color: var(--ink-dim); }
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .dot.ok { background: var(--good); box-shadow: 0 0 8px rgba(63,185,80,.6); }
+  .dot.bad { background: var(--bad); box-shadow: 0 0 8px rgba(248,81,73,.6); }
+  main { padding: 24px 28px 56px; max-width: 1320px; margin: 0 auto; }
+  .grid { display: grid; gap: 16px; }
+  .kpis { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin-bottom: 20px; }
+  .cols { grid-template-columns: 1.6fr 1fr; align-items: start; }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px 18px; min-width: 0;
+  }
+  .card h2 {
+    margin: 0 0 14px; font-size: 12px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-dim);
+  }
+  .kpi .label { font-size: 12px; color: var(--ink-dim); letter-spacing: .04em; text-transform: uppercase; }
+  .kpi .value { font-family: var(--mono); font-size: 28px; font-weight: 600; margin-top: 6px; letter-spacing: -0.02em; }
+  .kpi .sub { font-size: 12px; color: var(--ink-faint); margin-top: 2px; font-family: var(--mono); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; font-weight: 500; color: var(--ink-dim); font-size: 11px;
+    letter-spacing: .06em; text-transform: uppercase; padding: 0 10px 8px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  td { padding: 7px 10px 7px 0; border-bottom: 1px solid rgba(37,48,64,.5); font-family: var(--mono); font-size: 12.5px; }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; padding-right: 0; }
+  .pill {
+    display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px;
+    font-family: var(--mono); border: 1px solid transparent;
+  }
+  .pill.closed { color: var(--good); background: rgba(63,185,80,.10); border-color: rgba(63,185,80,.35); }
+  .pill.half_open { color: var(--warn); background: rgba(210,153,34,.10); border-color: rgba(210,153,34,.35); }
+  .pill.open { color: var(--bad); background: rgba(248,81,73,.12); border-color: rgba(248,81,73,.40); }
+  .pill.hit { color: var(--accent); background: rgba(76,194,255,.10); border-color: rgba(76,194,255,.32); }
+  .pill.miss { color: var(--ink-faint); border-color: var(--line); }
+  .bar { height: 7px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+  .bar > i.warn { background: var(--warn); }
+  .bar > i.bad { background: var(--bad); }
+  .rowlist { display: grid; gap: 10px; }
+  .rowlist .row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
+  .rowlist .name { font-family: var(--mono); font-size: 12.5px; }
+  .rowlist .n { font-family: var(--mono); font-size: 12.5px; color: var(--ink-dim); }
+  .rowlist .bar { grid-column: 1 / -1; }
+  .empty { color: var(--ink-faint); font-size: 13px; font-style: italic; padding: 6px 0; }
+  .gate { max-width: 460px; margin: 12vh auto; }
+  .gate p { color: var(--ink-dim); }
+  input[type=password], input[type=text] {
+    width: 100%; padding: 9px 11px; border-radius: 7px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--ink); font-family: var(--mono); font-size: 13px;
+  }
+  button {
+    margin-top: 10px; padding: 8px 16px; border-radius: 7px; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--ink); font-size: 13px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  .err { color: var(--bad); font-size: 13px; margin-top: 8px; min-height: 18px; }
+  footer { color: var(--ink-faint); font-size: 12px; padding: 0 28px 32px; max-width: 1320px; margin: 0 auto; }
+  svg text { font-family: var(--mono); font-size: 10px; fill: var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div id="gate" class="gate card" hidden>
+  <div class="brand" style="font-size:22px">slu<span>ice</span></div>
+  <p>The dashboard reads <code>/v1/stats</code>, which reports spend, key
+     identifiers and redaction counts. Present an API key to continue.</p>
+  <input id="key" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false">
+  <button id="go">Open dashboard</button>
+  <div id="gate-err" class="err"></div>
+</div>
+
+<div id="app" hidden>
+<header>
+  <div class="brand">slu<span>ice</span></div>
+  <div class="tagline">LLM gateway &mdash; cost, redaction, cache, failover</div>
+  <div class="spacer"></div>
+  <div class="meta"><span id="live" class="dot ok"></span><span id="uptime">&mdash;</span></div>
+  <div class="meta" id="refreshed">&mdash;</div>
+  <button id="signout" style="margin:0;padding:4px 10px;font-size:12px">Sign out</button>
+</header>
+
+<main>
+  <section class="grid kpis">
+    <div class="card kpi">
+      <div class="label">Spend, rolling window</div>
+      <div class="value" id="kpi-spend">&mdash;</div>
+      <div class="sub" id="kpi-spend-sub">&mdash;</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Cache hit rate</div>
+      <div class="value" id="kpi-cache">&mdash;</div>
+      <div class="sub" id="kpi-cache-sub">&mdash;</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Error rate</div>
+      <div class="value" id="kpi-err">&mdash;</div>
+      <div class="sub" id="kpi-err-sub">&mdash;</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Values redacted</div>
+      <div class="value" id="kpi-redact">&mdash;</div>
+      <div class="sub" id="kpi-redact-sub">&mdash;</div>
+    </div>
+  </section>
+
+  <section class="grid cols">
+    <div class="card">
+      <h2>Spend over time</h2>
+      <div id="spend-chart"></div>
+      <div class="sub meta" id="spend-note" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h2>Redactions by entity type</h2>
+      <div class="rowlist" id="redactions"></div>
+    </div>
+  </section>
+
+  <section class="grid cols" style="margin-top:16px">
+    <div class="card">
+      <h2>Latency by provider</h2>
+      <table>
+        <thead><tr>
+          <th>Provider</th><th class="num">n</th>
+          <th class="num">p50</th><th class="num">p95</th><th class="num">p99</th><th class="num">max</th>
+        </tr></thead>
+        <tbody id="latency"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Budgets</h2>
+      <div class="rowlist" id="budgets"></div>
+    </div>
+  </section>
+
+  <section class="grid" style="margin-top:16px">
+    <div class="card">
+      <h2>Targets and circuit breakers</h2>
+      <table>
+        <thead><tr>
+          <th>Route</th><th>Provider</th><th>Model</th><th>State</th>
+          <th class="num">Consecutive failures</th><th class="num">Trips</th><th class="num">Short-circuited</th>
+        </tr></thead>
+        <tbody id="targets"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="grid" style="margin-top:16px">
+    <div class="card">
+      <h2>Recent requests</h2>
+      <table>
+        <thead><tr>
+          <th>Time</th><th>Key</th><th>Route</th><th>Served by</th>
+          <th>Cache</th><th class="num">Tokens</th><th class="num">Cost</th><th class="num">Latency</th><th>Result</th>
+        </tr></thead>
+        <tbody id="recent"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Prompts shown anywhere in Sluice are redacted; the audit log never stores the
+  original values. Spend figures come from the same ledger that enforces the
+  budgets, so this page cannot disagree with the enforcement.
+  <span id="version"></span>
+</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var KEY_ITEM = "sluice.key";
+  var gate = document.getElementById("gate");
+  var app = document.getElementById("app");
+  var timer = null;
+
+  function key() { return sessionStorage.getItem(KEY_ITEM) || ""; }
+
+  function el(id) { return document.getElementById(id); }
+
+  function usd(n) {
+    if (n === 0) return "$0.00";
+    if (n < 0.01 && n > 0) return "$" + n.toFixed(6);
+    return "$" + n.toFixed(2);
+  }
+  function pct(n) { return (n * 100).toFixed(1) + "%"; }
+  function ms(n) { return n >= 1000 ? (n / 1000).toFixed(2) + "s" : n.toFixed(0) + "ms"; }
+  function dur(s) {
+    s = Math.floor(s);
+    if (s < 60) return s + "s";
+    if (s < 3600) return Math.floor(s / 60) + "m " + (s % 60) + "s";
+    if (s < 86400) return Math.floor(s / 3600) + "h " + Math.floor((s % 3600) / 60) + "m";
+    return Math.floor(s / 86400) + "d " + Math.floor((s % 86400) / 3600) + "h";
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function bar(frac, cls) {
+    var w = Math.max(0, Math.min(1, frac || 0)) * 100;
+    return '<div class="bar"><i class="' + (cls || "") + '" style="width:' + w.toFixed(1) + '%"></i></div>';
+  }
+
+  // Area chart, drawn as inline SVG. No library: the shape is a polygon, and a
+  // charting dependency would be more code than the chart.
+  function spendChart(points, slotSeconds) {
+    var w = 640, h = 150, pad = 22;
+    if (!points || !points.length) {
+      return '<div class="empty">No spend recorded yet.</div>';
+    }
+    var max = 0, total = 0, i;
+    for (i = 0; i < points.length; i++) { if (points[i] > max) max = points[i]; total += points[i]; }
+    if (max <= 0) max = 1e-9;
+    var step = (w - pad * 2) / Math.max(1, points.length - 1);
+    var pts = [], y;
+    for (i = 0; i < points.length; i++) {
+      y = h - pad - (points[i] / max) * (h - pad * 2);
+      pts.push((pad + i * step).toFixed(1) + "," + y.toFixed(1));
+    }
+    var area = pad + "," + (h - pad) + " " + pts.join(" ") + " " + (pad + (points.length - 1) * step).toFixed(1) + "," + (h - pad);
+    var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '" preserveAspectRatio="none" role="img" aria-label="Spend per slot">';
+    svg += '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">';
+    svg += '<stop offset="0%" stop-color="#4cc2ff" stop-opacity=".38"/>';
+    svg += '<stop offset="100%" stop-color="#4cc2ff" stop-opacity="0"/></linearGradient></defs>';
+    svg += '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#253040"/>';
+    svg += '<polygon points="' + area + '" fill="url(#g)"/>';
+    svg += '<polyline points="' + pts.join(" ") + '" fill="none" stroke="#4cc2ff" stroke-width="1.6" stroke-linejoin="round"/>';
+    svg += '<text x="' + pad + '" y="14">' + esc(usd(max)) + ' peak</text>';
+    svg += '<text x="' + (w - pad) + '" y="14" text-anchor="end">' + esc(usd(total)) + ' total</text>';
+    svg += "</svg>";
+    el("spend-note").textContent =
+      points.length + " slots of " + dur(slotSeconds || 0) + " each, oldest on the left.";
+    return svg;
+  }
+
+  function render(s) {
+    el("uptime").textContent = "up " + dur(s.uptime_seconds);
+    el("refreshed").textContent = "refreshed " + new Date().toLocaleTimeString();
+
+    var spend = 0, limit = 0, i;
+    for (i = 0; i < (s.budgets || []).length; i++) {
+      if (s.budgets[i].subject.indexOf("key:") === 0) {
+        spend += s.budgets[i].spent_usd;
+        limit += s.budgets[i].limit_usd;
+      }
+    }
+    el("kpi-spend").textContent = usd(spend);
+    el("kpi-spend-sub").textContent = limit > 0 ? "of " + usd(limit) + " across key budgets" : "no key budgets configured";
+
+    var c = s.cache || {};
+    el("kpi-cache").textContent = pct(s.cache_hit_rate || 0);
+    el("kpi-cache-sub").textContent =
+      (c.ExactHits || 0) + " exact / " + (c.SemanticHits || 0) + " semantic / " + (c.Misses || 0) + " miss";
+
+    var rq = s.requests || {};
+    el("kpi-err").textContent = pct(rq.error_rate || 0);
+    el("kpi-err-sub").textContent = (rq.errors || 0) + " of the last " + (rq.total || 0) + " requests";
+
+    var totalRedactions = 0;
+    for (i = 0; i < (s.redactions || []).length; i++) totalRedactions += s.redactions[i].count;
+    el("kpi-redact").textContent = String(totalRedactions);
+    el("kpi-redact-sub").textContent = (s.redactions || []).length + " entity types seen";
+
+    el("spend-chart").innerHTML = spendChart((s.spend || {}).points_usd, (s.spend || {}).slot_seconds);
+
+    var maxR = 0;
+    for (i = 0; i < (s.redactions || []).length; i++) maxR = Math.max(maxR, s.redactions[i].count);
+    var html = "";
+    for (i = 0; i < (s.redactions || []).length; i++) {
+      var r = s.redactions[i];
+      html += '<div class="row"><span class="name">' + esc(r.entity_type) + '</span>' +
+              '<span class="n">' + r.count + "</span>" + bar(maxR ? r.count / maxR : 0) + "</div>";
+    }
+    el("redactions").innerHTML = html || '<div class="empty">Nothing has been redacted yet.</div>';
+
+    html = "";
+    for (i = 0; i < (s.latency || []).length; i++) {
+      var l = s.latency[i];
+      html += "<tr><td>" + esc(l.provider) + '</td><td class="num">' + l.count +
+        '</td><td class="num">' + ms(l.p50_ms) + '</td><td class="num">' + ms(l.p95_ms) +
+        '</td><td class="num">' + ms(l.p99_ms) + '</td><td class="num">' + ms(l.max_ms) + "</td></tr>";
+    }
+    el("latency").innerHTML = html || '<tr><td colspan="6" class="empty">No requests observed yet.</td></tr>';
+
+    html = "";
+    for (i = 0; i < (s.budgets || []).length; i++) {
+      var b = s.budgets[i];
+      var cls = b.fraction >= 1 ? "bad" : (b.fraction >= 0.8 ? "warn" : "");
+      html += '<div class="row"><span class="name">' + esc(b.subject) +
+        ' <span style="color:var(--ink-faint)">(' + esc(b.on_exceed) + " / " + dur(b.window_seconds) + ")</span></span>" +
+        '<span class="n">' + usd(b.spent_usd) + " / " + usd(b.limit_usd) + "</span>" +
+        bar(b.fraction, cls) + "</div>";
+    }
+    el("budgets").innerHTML = html || '<div class="empty">No budgets configured.</div>';
+
+    html = "";
+    for (i = 0; i < (s.targets || []).length; i++) {
+      var t = s.targets[i], br = t.breaker || {};
+      html += "<tr><td>" + esc(t.alias) + "</td><td>" + esc(t.provider) + "</td><td>" + esc(t.model) +
+        '</td><td><span class="pill ' + esc(br.state) + '">' + esc(br.state) + "</span></td>" +
+        '<td class="num">' + (br.consecutive_failures || 0) + '</td><td class="num">' + (br.trips || 0) +
+        '</td><td class="num">' + (br.short_circuited || 0) + "</td></tr>";
+    }
+    el("targets").innerHTML = html || '<tr><td colspan="7" class="empty">No targets configured.</td></tr>';
+
+    html = "";
+    for (i = 0; i < (s.recent || []).length; i++) {
+      var q = s.recent[i];
+      var cache = q.cache_hit ? '<span class="pill hit">' + esc(q.cache_hit) + "</span>"
+                              : '<span class="pill miss">miss</span>';
+      var result = q.error_code
+        ? '<span class="pill open">' + esc(q.error_code) + "</span>"
+        : '<span class="pill closed">ok</span>';
+      if (q.degraded) result += ' <span class="pill half_open">degraded</span>';
+      var tokens = (q.usage ? (q.usage.input_tokens || 0) + (q.usage.output_tokens || 0) : 0);
+      html += "<tr><td>" + esc(new Date(q.time).toLocaleTimeString()) + "</td><td>" + esc(q.key_id) +
+        "</td><td>" + esc(q.requested_model) + "</td><td>" +
+        esc(q.provider ? q.provider + "/" + q.served_model : "—") + "</td><td>" + cache +
+        '</td><td class="num">' + tokens + '</td><td class="num">' + usd(q.cost_dollars || 0) +
+        '</td><td class="num">' + ms(q.latency_ms || 0) + "</td><td>" + result + "</td></tr>";
+    }
+    el("recent").innerHTML = html || '<tr><td colspan="9" class="empty">No requests yet. Send one and this fills in.</td></tr>';
+  }
+
+  function poll() {
+    fetch("/v1/stats", { headers: { Authorization: "Bearer " + key() } })
+      .then(function (r) {
+        if (r.status === 401) { signOut("That key was not accepted."); return null; }
+        if (!r.ok) throw new Error("stats returned " + r.status);
+        return r.json();
+      })
+      .then(function (s) {
+        if (!s) return;
+        el("live").className = "dot ok";
+        render(s);
+      })
+      .catch(function (e) {
+        el("live").className = "dot bad";
+        el("refreshed").textContent = "unreachable: " + e.message;
+      });
+  }
+
+  function start() {
+    gate.hidden = true;
+    app.hidden = false;
+    poll();
+    fetch("/healthz").then(function (r) { return r.json(); })
+      .then(function (h) { el("version").textContent = h.version ? " Version " + h.version + "." : ""; })
+      .catch(function () {});
+    if (timer) clearInterval(timer);
+    timer = setInterval(poll, 5000);
+  }
+
+  function signOut(message) {
+    sessionStorage.removeItem(KEY_ITEM);
+    if (timer) { clearInterval(timer); timer = null; }
+    app.hidden = true;
+    gate.hidden = false;
+    el("gate-err").textContent = message || "";
+  }
+
+  el("go").addEventListener("click", function () {
+    var v = el("key").value.trim();
+    if (!v) { el("gate-err").textContent = "A key is required."; return; }
+    sessionStorage.setItem(KEY_ITEM, v);
+    el("key").value = "";
+    start();
+  });
+  el("key").addEventListener("keydown", function (e) { if (e.key === "Enter") el("go").click(); });
+  el("signout").addEventListener("click", function () { signOut(""); });
+
+  if (key()) { start(); } else { gate.hidden = false; }
+})();
+</script>
+</body>
+</html>
