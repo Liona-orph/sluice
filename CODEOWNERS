@@ -1,0 +1,26 @@
+# Review ownership. GitHub requests a review from the owners of every path a pull
+# request touches.
+#
+# The point of the specific entries below is not bureaucracy: they are the files
+# where a mistake is silent. A regression in routing produces an error somebody
+# notices; a regression in redaction, in the audit record, or in metric
+# cardinality produces nothing at all until it is expensive.
+
+* @sluice-gw/maintainers
+
+# The security-critical core. A change here needs a second pair of eyes even when
+# it looks trivial.
+/internal/redact/         @sluice-gw/maintainers @sluice-gw/security
+/internal/audit/          @sluice-gw/maintainers @sluice-gw/security
+/internal/gateway/        @sluice-gw/maintainers @sluice-gw/security
+/SECURITY.md              @sluice-gw/maintainers @sluice-gw/security
+
+# Money. Pricing and budget arithmetic is the other thing that fails quietly.
+/pkg/llm/pricing.go       @sluice-gw/maintainers @sluice-gw/security
+/internal/policy/         @sluice-gw/maintainers
+
+# Supply chain and release surface.
+/.github/                 @sluice-gw/maintainers
+/Dockerfile               @sluice-gw/maintainers
+/go.mod                   @sluice-gw/maintainers
+/go.sum                   @sluice-gw/maintainers
