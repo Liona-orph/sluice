@@ -1,0 +1,9 @@
+# Minimal scrape configuration for the compose stack.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: sluice
+    static_configs:
+      - targets: ["sluice:8080"]
