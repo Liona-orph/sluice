@@ -1,0 +1,205 @@
+# A fully commented Sluice configuration.
+#
+# Every field below is optional: omitting one keeps the built-in default, and
+# `sluice serve` with no --config runs entirely on those defaults. Unknown fields
+# are rejected at load time, because a silently ignored key in a security
+# product's configuration is the worst kind of bug -- the operator believes the
+# control is on, the file says it is on, and it is not.
+#
+# Precedence, highest first: flags, environment, this file, built-in defaults.
+# `sluice serve --print-config` shows what the process actually resolved.
+# `sluice serve --check` validates and exits, which is what a deploy pipeline
+# should run.
+#
+# This example is what docker-compose.yml mounts. It reaches no network.
+
+server:
+  addr: ":8080"
+  # Must be set. Zero means "no limit", which is a slowloris invitation.
+  read_header_timeout: 5s
+  # Bounds a whole completion, streaming included. Generous: a long completion
+  # is a legitimate request, not an attack.
+  request_timeout: 120s
+  # How long a graceful shutdown waits for in-flight streams. Those have already
+  # been paid for upstream, so cutting them off wastes the money.
+  shutdown_grace: 15s
+  max_request_bytes: 4194304
+  dashboard: true
+
+telemetry:
+  log_level: info        # debug | info | warn | error
+  log_format: json       # json | text
+  metrics_path: /metrics # empty disables the endpoint
+
+audit:
+  enabled: true
+  # A file path, or "-" for stdout when a log shipper owns the filesystem.
+  path: /var/log/sluice/audit.jsonl
+  # fsync after every record. Roughly an order of magnitude in throughput, in
+  # exchange for durability across a machine failure rather than only a process
+  # failure. Worth it when the log is a compliance artefact.
+  sync: false
+
+redaction:
+  enabled: true
+  # Applies to any entity type not named below. Tokenize is the safe default:
+  # it is the only action that keeps the model's answer useful.
+  default_action: tokenize
+  actions:
+    # Contact details are tokenized because the reply usually needs them back
+    # and seeing one again is not a breach.
+    email: tokenize
+    phone: tokenize
+    person_name: tokenize
+    ip_address: tokenize
+    # Payment instruments and national identifiers are masked, keeping the last
+    # four. Restoring a card number into a model's output is a way to leak it
+    # into a log or a transcript.
+    credit_card: mask
+    iban: mask
+    us_ssn: mask
+    uk_nino: mask
+    es_dni: mask
+    # Credentials are hashed and never restored. A key that came back out of the
+    # gateway would defeat the point of stopping it going in.
+    api_key: hash
+  mask_keep_last: 4
+  # 0 keeps the gazetteer-only person-name matches (precision 0.857, recall
+  # 0.750). Raising it to 0.9 gives precision 1.000 and recall 0.250.
+  min_confidence: 0
+  # Mandatory whenever any type uses "hash": an unsalted digest of an email
+  # address is an email address to anyone with a word list. Set it from
+  # SLUICE_REDACTION_HASH_SALT rather than committing it.
+  hash_salt: change-me-before-deploying-anywhere-real
+
+cache:
+  enabled: true
+  max_entries: 10000
+  ttl: 1h
+  sweep_interval: 1m
+  # Off by default. An exact cache cannot return a wrong answer and a semantic
+  # one can, silently. Read docs/adr/0003 before turning this on.
+  semantic: false
+  embedding_dimensions: 256
+  # Measured, not guessed: 0/20 false hits on the fixture pairs at this
+  # threshold, 3/20 at 0.85. Values below 0.90 are rejected at load time.
+  similarity_threshold: 0.97
+
+providers:
+  # type: local is the offline deterministic provider. It is the only adapter in
+  # this build; see docs/adr/0004.
+  - name: local-primary
+    type: local
+    seed: 1
+    max_output_tokens: 200
+    # Latency simulation makes a streaming demo look like a real one.
+    latency:
+      time_to_first_token: 120ms
+      per_token: 4ms
+      jitter: 0.2
+
+  - name: local-standby
+    type: local
+    seed: 2
+    max_output_tokens: 200
+    latency:
+      time_to_first_token: 200ms
+      per_token: 6ms
+      jitter: 0.2
+
+  # An upstream that fails one request in five, so that retry, failover and the
+  # circuit breaker are demonstrable rather than merely implemented. Remove it
+  # in anything real.
+  - name: local-flaky
+    type: local
+    seed: 3
+    failure:
+      code: provider_unavailable
+      rate: 0.2
+      message: injected for the demo
+
+routes:
+  # An alias named after a real model, answered locally under that name so that
+  # the built-in price table applies real list prices to token counts that were
+  # really measured. The tokens are real; the money is simulated.
+  - model: gpt-4o-mini
+    # priority always prefers the first healthy target: correct when the list is
+    # ordered by preference, which a failover list usually is.
+    strategy: priority
+    targets:
+      - {provider: local-primary, model: gpt-4o-mini}
+      - {provider: local-standby, model: gpt-4o-mini}
+    retry:
+      max_attempts: 3        # counts the first try; 1 disables retry
+      base_delay: 50ms
+      max_delay: 2s
+      multiplier: 2
+      jitter: 0.3            # without it, a herd retries in lockstep
+    breaker:
+      failure_threshold: 5   # consecutive failures, not a rate
+      success_threshold: 2   # consecutive successes in half-open to close
+      open_for: 30s
+      half_open_probes: 1
+
+  # The cheaper alias budgets degrade to.
+  - model: sluice-demo-cheap
+    strategy: round_robin
+    targets:
+      - {provider: local-primary, model: local-small}
+      - {provider: local-standby, model: local-small}
+    retry:   {max_attempts: 2, base_delay: 50ms, max_delay: 1s, multiplier: 2, jitter: 0.3}
+    breaker: {failure_threshold: 5, success_threshold: 2, open_for: 30s, half_open_probes: 1}
+
+  # A weighted split: most traffic to the primary, a tenth to the flaky standby
+  # so that the failover path is exercised before it is needed rather than
+  # during an incident.
+  - model: sluice-demo
+    strategy: weighted
+    targets:
+      - {provider: local-primary, model: local-large, weight: 9}
+      - {provider: local-flaky,   model: local-large, weight: 1}
+    retry:   {max_attempts: 3, base_delay: 50ms, max_delay: 2s, multiplier: 2, jitter: 0.3}
+    breaker: {failure_threshold: 5, success_threshold: 2, open_for: 30s, half_open_probes: 1}
+
+teams:
+  - id: demo
+    budget:
+      limit: 50.00       # US dollars
+      window: 24h        # rolling, not calendar
+      on_exceed: reject
+
+keys:
+  # Secrets in a config file. Generate them from a CSPRNG, keep this file out of
+  # version control, and read SECURITY.md. This one is safe only because the
+  # deployment above reaches no network and spends no money.
+  - id: demo-key
+    secret: sk-sluice-local-demo
+    team: demo
+    # Empty models means every route. Naming them restricts the key.
+    models: [gpt-4o-mini, sluice-demo, sluice-demo-cheap]
+    rate_limit:
+      # Both limits, because a request limit alone does not bound spend: one
+      # request with a huge context costs more than a thousand short ones.
+      requests_per_minute: 120
+      tokens_per_minute: 200000
+      burst: 2           # bucket depth as a multiple of one minute's refill
+    budget:
+      limit: 5.00
+      window: 24h
+      # reject is the default and the safe choice: a budget that silently
+      # changes the model changes the answers an application gets. degrade keeps
+      # serving on a cheaper alias and is observable in the response header and
+      # the audit record.
+      on_exceed: degrade
+      degrade_to: sluice-demo-cheap
+
+# Optional overrides for the built-in price snapshot, in US dollars per million
+# tokens. The built-in table is dated and nothing keeps it current, so a
+# deployment that reports cost to a finance team should state its own negotiated
+# rates here and reconcile against the invoice.
+#
+# pricing:
+#   gpt-4o-mini:
+#     input_per_million: 0.15
+#     output_per_million: 0.60
+#     cached_input_per_million: 0.075
