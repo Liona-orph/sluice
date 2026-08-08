@@ -1,0 +1,57 @@
+name: Fuzz
+
+on:
+  schedule:
+    # Nightly. Fuzzing on every pull request would add ten minutes to every
+    # review for a target that finds something once a month; on a schedule it
+    # runs long enough to be worth running.
+    - cron: '41 2 * * *'
+  workflow_dispatch:
+    inputs:
+      fuzztime:
+        description: How long to fuzz each target
+        default: 10m
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    name: fuzz ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The redactor is where a fuzz finding would be a silent leak rather
+          # than a crash, which is why it has two targets.
+          - package: ./internal/redact
+            target: FuzzRedact
+          - package: ./internal/redact
+            target: FuzzDetect
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: fuzz
+        run: |
+          go test ${{ matrix.package }} -run '^$' \
+            -fuzz '^${{ matrix.target }}$' \
+            -fuzztime '${{ github.event.inputs.fuzztime || ''10m'' }}'
+
+      # A crasher is only useful if it leaves the runner. Uploading it means the
+      # failing input can be added to testdata as a seed, which is where an
+      # interesting case belongs.
+      - name: upload the failing corpus
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-corpus-${{ matrix.target }}
+          path: |
+            **/testdata/fuzz/**
+            $HOME/.cache/go-build/fuzz/**
+          if-no-files-found: warn

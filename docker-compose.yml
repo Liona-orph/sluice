@@ -1,0 +1,52 @@
+# A local Sluice with Prometheus scraping it.
+#
+# Everything here runs offline against the built-in local provider; nothing
+# reaches a paid API. `docker compose up` then open http://localhost:8080 and
+# paste the demo key from sluice.example.yaml.
+
+services:
+  sluice:
+    build:
+      context: .
+      args:
+        VERSION: dev
+    image: sluice:dev
+    ports:
+      - "8080:8080"
+    environment:
+      SLUICE_CONFIG: /etc/sluice/sluice.yaml
+      SLUICE_LOG_LEVEL: info
+      SLUICE_LOG_FORMAT: json
+      # The one secret that should not live in the config file. In a real
+      # deployment this comes from a secret manager, not from compose.
+      SLUICE_REDACTION_HASH_SALT: change-me-before-deploying-anywhere-real
+    command: ["serve", "--config", "/etc/sluice/sluice.yaml"]
+    volumes:
+      - ./sluice.example.yaml:/etc/sluice/sluice.yaml:ro
+      - sluice-audit:/var/log/sluice
+    # The image already runs as nonroot; these make the rest of the container
+    # boring for anyone who gets execution inside it.
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=24h
+    depends_on:
+      - sluice
+    restart: unless-stopped
+
+volumes:
+  sluice-audit:

@@ -1,0 +1,22 @@
+name: Dependency review
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          # Sluice has three direct dependencies. A pull request that adds one
+          # with a known vulnerability, or with a licence incompatible with
+          # Apache 2.0, should not be a discussion in review -- it should fail.
+          fail-on-severity: moderate
+          deny-licenses: AGPL-3.0, GPL-2.0, GPL-3.0, LGPL-3.0
+          comment-summary-in-pr: on-failure
