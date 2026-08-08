@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pin the toolchain so a newer Go released mid-week cannot change a result
+  # under an unrelated pull request.
+  GOTOOLCHAIN: local
+
+jobs:
+  test:
+    name: test (go ${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor is the go directive in go.mod. The ceiling is the current
+        # release, because a repository that only builds on the version its
+        # author has installed discovers that six months late.
+        go: ['1.23', '1.24']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+          cache: true
+
+      - name: go mod verify
+        run: go mod verify
+
+      - name: gofmt
+        run: |
+          out=$(gofmt -l .)
+          if [ -n "$out" ]; then
+            echo "these files are not gofmt-clean:"; echo "$out"; exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: build
+        run: go build ./...
+
+      # -race needs cgo, which is why this is explicit rather than assumed. The
+      # streaming paths are where a data race would live and where it would be
+      # least visible without it.
+      - name: test -race
+        run: CGO_ENABLED=1 go test ./... -race -count=1 -timeout 10m
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          # Same version as the Makefile. If these drift, the local run and CI
+          # disagree and everyone stops trusting both.
+          version: v1.62.2
+          args: --timeout 5m
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+      - run: go test ./... -count=1 -coverprofile=coverage.out -covermode=atomic
+      - name: report
+        run: go tool cover -func=coverage.out | tail -1
+
+  quickstart:
+    name: quickstart actually works
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      # The README claims the gateway serves a request offline with no
+      # configuration. This is what keeps that claim honest.
+      - name: build and serve
+        run: |
+          go build -o sluice ./cmd/sluice
+          ./sluice serve --addr 127.0.0.1:8080 --audit audit.jsonl --log-level warn &
+          for i in $(seq 1 50); do
+            curl -sf localhost:8080/healthz >/dev/null && break
+            sleep 0.2
+          done
+
+      - name: a redacted round trip
+        run: |
+          body=$(curl -sf localhost:8080/v1/chat/completions \
+            -H 'Authorization: Bearer sk-sluice-local-demo' \
+            -H 'Content-Type: application/json' \
+            -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Email alice@example.com"}]}')
+          echo "$body"
+          echo "$body" | grep -q 'alice@example.com' || { echo "the address was not restored"; exit 1; }
+          grep -q 'SLUICE_EMAIL_0001' audit.jsonl || { echo "the audit prompt was not redacted"; exit 1; }
+          grep -q 'alice@example.com' audit.jsonl && { echo "the audit log contains the raw address"; exit 1; }
+          echo "ok"
+
+      - name: replay re-prices the log
+        run: ./sluice replay --audit audit.jsonl --as gpt-4o
+
+  docker:
+    name: docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: sluice:ci
+          build-args: |
+            VERSION=ci
+      - name: the image runs as a non-root user and serves
+        run: |
+          docker run -d --name sluice-ci -p 8080:8080 sluice:ci
+          for i in $(seq 1 50); do
+            curl -sf localhost:8080/healthz >/dev/null && break
+            sleep 0.2
+          done
+          test "$(docker inspect -f '{{.Config.User}}' sluice:ci)" = "65532:65532"
+          docker rm -f sluice-ci

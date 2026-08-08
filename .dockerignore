@@ -1,0 +1,23 @@
+# Keep the build context to what the build actually needs. Everything excluded
+# here is either large, irrelevant, or a secret.
+.git
+.github
+.golangci.yml
+*.md
+docs/
+
+# Local state and credentials
+sluice.yaml
+sluice.yml
+sluice.local.*
+*.jsonl
+audit.log
+coverage.out
+coverage.html
+
+# Build output from a host build, which would otherwise be copied in and
+# ignored -- or worse, mistaken for the one just built.
+/sluice
+/dist/
+/bin/
+**/testdata/fuzz/

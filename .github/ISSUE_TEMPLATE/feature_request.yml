@@ -1,0 +1,46 @@
+name: Proposal
+description: A change to what Sluice does.
+labels: [proposal]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: >
+        Describe the situation, not the solution. "Our finance team cannot
+        attribute spend to a product line" is a problem; "add a tags field" is a
+        solution to a problem you have not stated yet.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What else you considered, and why it is worse
+      description: >
+        This is the part that makes a proposal reviewable. If the answer is
+        "nothing", say so.
+    validations:
+      required: true
+
+  - type: textarea
+    id: cost
+    attributes:
+      label: What it would cost
+      description: >
+        New dependency? New configuration surface? A change to a measured number?
+        A behaviour that fails silently when it is wrong?
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: I have read docs/adr/ and this does not contradict an accepted decision (or it does, and I have said why it should be superseded).

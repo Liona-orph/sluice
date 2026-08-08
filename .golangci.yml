@@ -1,0 +1,233 @@
+# golangci-lint configuration for Sluice.
+#
+# Pinned to v1.62.2 in the Makefile and in CI, because a linter that changes
+# under you turns an unrelated pull request red and teaches everyone to ignore
+# the linter.
+#
+# The selection is deliberate rather than "enable everything and add nolint".
+# Every non-obvious linter below carries the reason it is on; the ones left off
+# are listed at the end with the reason they are off, because "why is gocyclo
+# not enabled" is a question that otherwise gets asked once a quarter forever.
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  disable-all: true
+  enable:
+    # The defaults. These catch real bugs and almost never argue.
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+    # errorlint: the whole failover and retry mechanism is built on errors.As
+    # and errors.Is over llm.Error. A comparison written as `err == ErrTimeout`
+    # or a type switch on a wrapped error silently disables failover, and it
+    # does so without failing any test that does not wrap.
+    - errorlint
+    # errname: sentinel errors named ErrX and error types named XError, so that
+    # the taxonomy in pkg/llm stays readable as it grows.
+    - errname
+    # nilerr: returning nil after checking err != nil. In a request pipeline
+    # this turns a provider failure into a successful empty response, which is
+    # billed, cached and audited as a success.
+    - nilerr
+    # nilnil: returning (nil, nil) from something that returns a pointer and an
+    # error, which forces every caller to nil-check a value the signature says
+    # is present.
+    - nilnil
+
+    # gosec: this is a security product. The findings that matter here are file
+    # permissions on the audit log, weak randomness where it must not be weak,
+    # and unhandled decompression bombs. G104 (unhandled errors) is off because
+    # errcheck already covers it with better exclusions.
+    - gosec
+    # bidichk: Trojan Source. Bidirectional control characters can make source
+    # read differently to a human than to the compiler, which in a redaction
+    # policy or an auth check is exactly the place it would be used.
+    - bidichk
+
+    # bodyclose and noctx: every HTTP client call must close its body and carry
+    # a context. A gateway that leaks connections or cannot be cancelled fails
+    # in production and passes every unit test.
+    - bodyclose
+    - noctx
+
+    # exhaustive: switches over ErrorCode, breaker State and Action. A new
+    # error code that silently falls into a default is a routing decision made
+    # by omission. default-signifies-exhaustive is set below, so a switch that
+    # deliberately handles the rest generically stays quiet.
+    - exhaustive
+
+    # durationcheck: multiplying two durations, which produces a number in
+    # nanoseconds squared and is always a bug. Backoff arithmetic is full of
+    # opportunities for it.
+    - durationcheck
+
+    # unparam and unconvert: dead parameters and pointless conversions, both of
+    # which accumulate in a refactor and both of which mislead the next reader
+    # about what a function needs.
+    - unparam
+    - unconvert
+
+    # revive replaces the deprecated golint: exported identifiers documented,
+    # naming conventions, early returns.
+    - revive
+    # gocritic: a broad diagnostic set. The style and performance groups are
+    # enabled below; the experimental one is not.
+    - gocritic
+
+    # gochecknoinits: init() is action at a distance, and a gateway whose
+    # behaviour depends on package initialisation order cannot be reasoned
+    # about from its entry point. There are none, and this keeps it that way.
+    - gochecknoinits
+
+    # testifylint: assert.Equal with the arguments the wrong way round reports
+    # "expected X, got Y" backwards, and a misleading failure message costs
+    # more time than the bug.
+    - testifylint
+
+    # copyloopvar: Go 1.22 changed loop variable semantics. This catches the
+    # now-redundant `x := x` lines rather than leaving them to rot.
+    - copyloopvar
+
+    # misspell and predeclared: cheap, and both catch things that survive
+    # review because the eye reads what it expects.
+    - misspell
+    - predeclared
+    # reassign: assigning to another package's exported variable, which is how
+    # a test accidentally breaks an unrelated one.
+    - reassign
+
+  # Deliberately not enabled, with reasons:
+  #
+  #   gocyclo, funlen, cyclop  A request pipeline written out linearly is
+  #                            easier to audit than the same logic split into
+  #                            eight functions to satisfy a number. The
+  #                            complexity is in the problem.
+  #   gochecknoglobals         Would flag immutable lookup tables (pricing,
+  #                            detector lists, metric label allow-lists) that
+  #                            are global by design and never written after
+  #                            initialisation. The rule that matters is "no
+  #                            global mutable state", which this does not
+  #                            express.
+  #   wrapcheck                Demands wrapping at every boundary including the
+  #                            ones where the error is already fully qualified
+  #                            by llm.Error. The noise would drown the cases
+  #                            where wrapping actually adds context.
+  #   dupl                     Table-driven tests are structurally similar on
+  #                            purpose.
+  #   lll                      Comments here carry reasoning; hard-wrapping
+  #                            prose at 120 columns is what gofmt does not do
+  #                            and for good reason.
+  #   godot, wsl, nlreturn     Whitespace and punctuation opinions with no
+  #                            defect-finding power.
+  #   depguard                 One direct dependency beyond the standard
+  #                            library and testify; there is nothing to guard.
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: false
+    exclude-functions:
+      # A failed write to an already-committed HTTP response has no recipient;
+      # the handlers log what they can and there is nothing else to do.
+      - (net/http.ResponseWriter).Write
+      # Usage text and report tables written to an *os.File the process already
+      # owns. If stdout is broken there is nowhere to report that it is broken.
+      - fmt.Fprint
+      - fmt.Fprintf
+      - fmt.Fprintln
+
+  exhaustive:
+    default-signifies-exhaustive: true
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+    disabled-checks:
+      # Conflicts with the house style of stating a rule and then its exception
+      # in an if/else, which reads better than an early return when the two
+      # branches are equally important.
+      - ifElseChain
+      # Flags every large struct passed by value, including the config and
+      # request values that are deliberately copied so they cannot be mutated
+      # by a callee.
+      - hugeParam
+      # rangeValCopy fires on every `for _, key := range cfg.Keys`. The structs
+      # are 128-320 bytes and the loops run at startup, during validation, or
+      # once per request over a handful of elements. Rewriting them to index
+      # into the slice would save nanoseconds and cost the reader a level of
+      # indirection in exactly the code that has to be read carefully.
+      - rangeValCopy
+
+  gosec:
+    excludes:
+      # Covered by errcheck with better exclusions.
+      - G104
+
+  govet:
+    enable:
+      - shadow
+
+  revive:
+    rules:
+      - name: exported
+      - name: package-comments
+      - name: indent-error-flow
+      - name: errorf
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
+  misspell:
+    # The prose here is British English, which the default US locale flags
+    # incorrectly on words like "behaviour". Leaving the locale unset checks
+    # only unambiguous misspellings.
+    ignore-words:
+      - behaviour
+      - behaviours
+      - normalise
+      - normalised
+      - normalises
+      - tokenize
+      - tokenized
+      - tokenizer
+      - cancelled
+      - modelling
+      - modelled
+
+issues:
+  # The defaults hide a great deal, including every finding in a _test.go file
+  # for several linters. Tests are code.
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        # Test fixtures legitimately contain things that look like credentials
+        # and card numbers, and a test that constructs a bad state on purpose
+        # is not a vulnerability.
+        - gosec
+        # A helper that panics on a misconfigured fixture is failing the test
+        # loudly, which is what it should do.
+        - unparam
+    - path: _test\.go
+      text: "unused-parameter"
+      linters:
+        - revive
+    - path: internal/server/server_test\.go
+      linters:
+        # Every response in these tests comes from a helper that registers
+        # t.Cleanup to close the body. bodyclose's escape analysis does not
+        # follow a returned *http.Response through a helper, so it reports
+        # every call site. The bodies are closed; see harness.post and
+        # harness.get.
+        - bodyclose
