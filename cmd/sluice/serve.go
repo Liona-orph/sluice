@@ -14,11 +14,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 
-	"github.com/sluice-gw/sluice/internal/audit"
-	"github.com/sluice-gw/sluice/internal/config"
-	"github.com/sluice-gw/sluice/internal/gateway"
-	"github.com/sluice-gw/sluice/internal/server"
-	"github.com/sluice-gw/sluice/internal/telemetry"
+	"github.com/Liona-orph/sluice/internal/audit"
+	"github.com/Liona-orph/sluice/internal/config"
+	"github.com/Liona-orph/sluice/internal/gateway"
+	"github.com/Liona-orph/sluice/internal/server"
+	"github.com/Liona-orph/sluice/internal/telemetry"
 )
 
 func runServe(args []string) error {

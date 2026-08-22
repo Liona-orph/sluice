@@ -13,8 +13,8 @@ limitations there are security-relevant.
 **Do not open a public issue.**
 
 Use GitHub's private vulnerability reporting on this repository
-(**Security → Report a vulnerability**), or email **security@sluice-gw.dev**. If you want
-to encrypt, ask for a key in a first message containing nothing sensitive.
+(**Security → Report a vulnerability**). It keeps the report and any reproduction
+details private until a coordinated disclosure is ready.
 
 Please include: a description, the version or commit, a reproduction, the impact you
 believe it has, and whether any third party is already aware.

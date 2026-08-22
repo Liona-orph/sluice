@@ -6,21 +6,21 @@
 # notices; a regression in redaction, in the audit record, or in metric
 # cardinality produces nothing at all until it is expensive.
 
-* @sluice-gw/maintainers
+* @Liona-orph
 
 # The security-critical core. A change here needs a second pair of eyes even when
 # it looks trivial.
-/internal/redact/         @sluice-gw/maintainers @sluice-gw/security
-/internal/audit/          @sluice-gw/maintainers @sluice-gw/security
-/internal/gateway/        @sluice-gw/maintainers @sluice-gw/security
-/SECURITY.md              @sluice-gw/maintainers @sluice-gw/security
+/internal/redact/         @Liona-orph
+/internal/audit/          @Liona-orph
+/internal/gateway/        @Liona-orph
+/SECURITY.md              @Liona-orph
 
 # Money. Pricing and budget arithmetic is the other thing that fails quietly.
-/pkg/llm/pricing.go       @sluice-gw/maintainers @sluice-gw/security
-/internal/policy/         @sluice-gw/maintainers
+/pkg/llm/pricing.go       @Liona-orph
+/internal/policy/         @Liona-orph
 
 # Supply chain and release surface.
-/.github/                 @sluice-gw/maintainers
-/Dockerfile               @sluice-gw/maintainers
-/go.mod                   @sluice-gw/maintainers
-/go.sum                   @sluice-gw/maintainers
+/.github/                 @Liona-orph
+/Dockerfile               @Liona-orph
+/go.mod                   @Liona-orph
+/go.sum                   @Liona-orph

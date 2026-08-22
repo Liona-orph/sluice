@@ -50,7 +50,7 @@ FROM gcr.io/distroless/static-debian12:nonroot
 
 LABEL org.opencontainers.image.title="sluice" \
       org.opencontainers.image.description="An LLM gateway: cost accounting, PII redaction, caching and failover." \
-      org.opencontainers.image.source="https://github.com/sluice-gw/sluice" \
+      org.opencontainers.image.source="https://github.com/Liona-orph/sluice" \
       org.opencontainers.image.licenses="Apache-2.0"
 
 COPY --from=build /out/sluice /usr/local/bin/sluice

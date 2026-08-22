@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 type promptPair struct {

@@ -4,7 +4,7 @@ import (
 	"iter"
 	"strings"
 
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // MaxPlaceholderLen bounds how much text a StreamRestorer holds back.

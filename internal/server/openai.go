@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/sluice-gw/sluice/internal/gateway"
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/internal/gateway"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // The OpenAI-compatible surface: what is implemented and what is ignored.

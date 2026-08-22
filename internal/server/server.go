@@ -31,8 +31,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/sluice-gw/sluice/internal/gateway"
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/internal/gateway"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // Options configures a Server.

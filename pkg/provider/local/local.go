@@ -29,7 +29,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // Latency describes the timing the provider imitates.

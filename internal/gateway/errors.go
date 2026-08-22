@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sluice-gw/sluice/internal/router"
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/internal/router"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // OutcomeClientDisconnected is the audit and metric outcome for a stream the

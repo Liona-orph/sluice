@@ -8,11 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sluice-gw/sluice/internal/cache"
-	"github.com/sluice-gw/sluice/internal/leaktest"
-	"github.com/sluice-gw/sluice/internal/redact"
-	"github.com/sluice-gw/sluice/pkg/llm"
-	"github.com/sluice-gw/sluice/pkg/provider/local"
+	"github.com/Liona-orph/sluice/internal/cache"
+	"github.com/Liona-orph/sluice/internal/leaktest"
+	"github.com/Liona-orph/sluice/internal/redact"
+	"github.com/Liona-orph/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/pkg/provider/local"
 )
 
 // These tests assemble the four core pieces the way a gateway would -- redact,

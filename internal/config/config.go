@@ -26,8 +26,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sluice-gw/sluice/internal/redact"
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/internal/redact"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // Config is a whole gateway.

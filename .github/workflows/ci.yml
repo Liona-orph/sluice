@@ -28,11 +28,11 @@ jobs:
         # The floor is the go directive in go.mod. The ceiling is the current
         # release, because a repository that only builds on the version its
         # author has installed discovers that six months late.
-        go: ['1.23', '1.24']
+        go: ['1.23', '1.26']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
@@ -64,26 +64,24 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.23'
+          go-version: '1.26'
           cache: true
-      - uses: golangci/golangci-lint-action@v6
-        with:
-          # Same version as the Makefile. If these drift, the local run and CI
-          # disagree and everyone stops trusting both.
-          version: v1.62.2
-          args: --timeout 5m
+      - name: golangci-lint
+        # The Makefile installs the pinned version under ./bin. Keeping the
+        # installer in one place prevents local and remote lint from drifting.
+        run: make lint
 
   coverage:
     name: coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.23'
+          go-version: '1.26'
           cache: true
       - run: go test ./... -count=1 -coverprofile=coverage.out -covermode=atomic
       - name: report
@@ -93,10 +91,10 @@ jobs:
     name: quickstart actually works
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.23'
+          go-version: '1.26'
           cache: true
 
       # The README claims the gateway serves a request offline with no
@@ -129,9 +127,9 @@ jobs:
     name: docker image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
           push: false

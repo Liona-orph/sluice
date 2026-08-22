@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sluice-gw/sluice/internal/leaktest"
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/internal/leaktest"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // feed pushes text through a stream redactor in the given pieces.

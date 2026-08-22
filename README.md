@@ -2,9 +2,9 @@
 
 An LLM gateway in Go that measures what you spend, strips personal data out of prompts before they leave the building, stops paying twice for the same answer, and keeps working when a provider does not.
 
-[![CI](https://github.com/sluice-gw/sluice/actions/workflows/ci.yml/badge.svg)](https://github.com/sluice-gw/sluice/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/sluice-gw/sluice/actions/workflows/codeql.yml/badge.svg)](https://github.com/sluice-gw/sluice/actions/workflows/codeql.yml)
-[![Go Reference](https://pkg.go.dev/badge/github.com/sluice-gw/sluice.svg)](https://pkg.go.dev/github.com/sluice-gw/sluice)
+[![CI](https://github.com/Liona-orph/sluice/actions/workflows/ci.yml/badge.svg)](https://github.com/Liona-orph/sluice/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Liona-orph/sluice/actions/workflows/codeql.yml/badge.svg)](https://github.com/Liona-orph/sluice/actions/workflows/codeql.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Liona-orph/sluice.svg)](https://pkg.go.dev/github.com/Liona-orph/sluice)
 [![Go 1.23](https://img.shields.io/badge/go-1.23-00ADD8?logo=go&logoColor=white)](https://go.dev/dl/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
@@ -19,7 +19,7 @@ deployment against the built-in [local provider](pkg/provider/local): two upstre
 route aliases, one demo key.
 
 ```sh
-git clone https://github.com/sluice-gw/sluice && cd sluice
+git clone https://github.com/Liona-orph/sluice && cd sluice
 go build -o sluice ./cmd/sluice
 # --audit writes the log to a file; the default is stdout, which is what a
 # container wants and not what the replay step below wants.

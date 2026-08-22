@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // Action is what a budget check decided.

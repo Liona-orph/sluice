@@ -29,7 +29,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // Strategy selects between healthy targets. The values match the config file's.

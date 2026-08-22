@@ -16,11 +16,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sluice-gw/sluice/internal/audit"
-	"github.com/sluice-gw/sluice/internal/config"
-	"github.com/sluice-gw/sluice/internal/gateway"
-	"github.com/sluice-gw/sluice/internal/leaktest"
-	"github.com/sluice-gw/sluice/internal/telemetry"
+	"github.com/Liona-orph/sluice/internal/audit"
+	"github.com/Liona-orph/sluice/internal/config"
+	"github.com/Liona-orph/sluice/internal/gateway"
+	"github.com/Liona-orph/sluice/internal/leaktest"
+	"github.com/Liona-orph/sluice/internal/telemetry"
 )
 
 const demoSecret = "sk-sluice-local-demo"

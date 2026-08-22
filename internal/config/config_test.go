@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/sluice-gw/sluice/internal/redact"
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/internal/redact"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 func TestDefaultConfigIsValidAndUsable(t *testing.T) {

@@ -1,4 +1,4 @@
-module github.com/sluice-gw/sluice
+module github.com/Liona-orph/sluice
 
 go 1.23
 

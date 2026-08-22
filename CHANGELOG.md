@@ -78,5 +78,5 @@ by change type.
   GitHub Actions for CI across a Go version matrix, CodeQL, scheduled fuzzing and
   dependency review.
 
-[Unreleased]: https://github.com/sluice-gw/sluice/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/sluice-gw/sluice/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Liona-orph/sluice/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Liona-orph/sluice/releases/tag/v0.1.0

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sluice-gw/sluice/internal/redact"
+	"github.com/Liona-orph/sluice/internal/redact"
 )
 
 // dashboardHTML is the operator dashboard, compiled into the binary.

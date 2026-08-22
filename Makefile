@@ -6,11 +6,11 @@
 SHELL           := /bin/bash
 GO              ?= go
 BINARY          := sluice
-PKG             := github.com/sluice-gw/sluice
+PKG             := github.com/Liona-orph/sluice
 # Pinned. A linter that changes under you turns an unrelated pull request red and
 # teaches everyone to ignore the linter.
 GOLANGCI_VERSION := v1.62.2
-GOLANGCI        := $(shell $(GO) env GOPATH)/bin/golangci-lint
+GOLANGCI        := $(CURDIR)/bin/golangci-lint
 
 VERSION   ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 COMMIT    ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
@@ -48,7 +48,12 @@ lint: $(GOLANGCI)
 	$(GOLANGCI) run ./...
 
 $(GOLANGCI):
-	$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_VERSION)
+	@mkdir -p $(dir $(GOLANGCI))
+	GOBIN="$(CURDIR)/bin" $(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_VERSION)
+
+## test-tooling: prove linting cannot reuse a stale global binary
+test-tooling:
+	./scripts/test_makefile_tooling.sh
 
 ## fmt: format every Go file, and fail if anything changed
 fmt:
@@ -86,11 +91,11 @@ docker:
 	  -t $(DOCKER_IMAGE):$(DOCKER_TAG) .
 
 ## ci: everything CI runs, in the order it runs it
-ci: fmt vet lint test-race build
+ci: test-tooling fmt vet lint test-race build
 	@echo "green"
 
 ## clean: remove build and coverage artefacts
 clean:
 	rm -f $(BINARY) coverage.out coverage.html
 
-.PHONY: help build test test-race lint fmt vet cover bench fuzz run docker ci clean
+.PHONY: help build test test-race lint test-tooling fmt vet cover bench fuzz run docker ci clean

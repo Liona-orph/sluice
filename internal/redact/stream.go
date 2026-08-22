@@ -3,7 +3,7 @@ package redact
 import (
 	"iter"
 
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // StreamRedactor redacts text arriving in arbitrary chunks.

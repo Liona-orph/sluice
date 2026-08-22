@@ -15,7 +15,7 @@ Every change must leave the repository green on all four:
 ```sh
 gofmt -l .                          # must print nothing
 go vet ./...
-golangci-lint run                   # v1.62.2, pinned; make lint installs it
+make lint                           # installs v1.62.2 under ./bin
 CGO_ENABLED=1 go test ./... -race
 ```
 

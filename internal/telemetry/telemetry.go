@@ -29,7 +29,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // AllowedLabels is every label name any Sluice metric may use.

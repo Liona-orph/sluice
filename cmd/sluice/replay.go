@@ -10,9 +10,9 @@ import (
 	"sort"
 	"text/tabwriter"
 
-	"github.com/sluice-gw/sluice/internal/audit"
-	"github.com/sluice-gw/sluice/internal/config"
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/internal/audit"
+	"github.com/Liona-orph/sluice/internal/config"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // runReplay re-prices an audit log.

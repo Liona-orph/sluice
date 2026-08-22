@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sluice-gw/sluice/pkg/llm"
+	"github.com/Liona-orph/sluice/pkg/llm"
 )
 
 // State is a circuit breaker's state.
