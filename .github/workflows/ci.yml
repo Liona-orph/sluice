@@ -103,7 +103,7 @@ jobs:
         run: |
           go build -o sluice ./cmd/sluice
           ./sluice serve --addr 127.0.0.1:8080 --audit audit.jsonl --log-level warn &
-          for i in $(seq 1 50); do
+          for _ in $(seq 1 50); do
             curl -sf localhost:8080/healthz >/dev/null && break
             sleep 0.2
           done
@@ -140,7 +140,7 @@ jobs:
       - name: the image runs as a non-root user and serves
         run: |
           docker run -d --name sluice-ci -p 8080:8080 sluice:ci
-          for i in $(seq 1 50); do
+          for _ in $(seq 1 50); do
             curl -sf localhost:8080/healthz >/dev/null && break
             sleep 0.2
           done
